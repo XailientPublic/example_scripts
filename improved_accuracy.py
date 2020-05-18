@@ -17,10 +17,10 @@ def main()
 	# --- uncomment to utilise post-processing --- #
 	# 1.
 	# Post-processing to remove any bboxes whose coordinates are inside larger bboxes.
-	# -- remove_inside_bboxes(bboxes)
+	# remove_inside_bboxes(bboxes) # uncomment me!!!
 	# 2. 
 	# Post-processing that combines any two overlapping bboxes into one larger bbox.
-	# -- 2. combine_bboxes(bboxes)
+	# combine_bboxes(bboxes) # uncomment me!!!
 	
 	
 	# Loop through list (if empty this will be skipped) and overlay green bboxes
