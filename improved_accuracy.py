@@ -16,10 +16,10 @@ def main()
 	
 	# --- uncomment to utilise post-processing --- #
 	# 1.
-	# post-processing to remove any smaller bboxes appearing inside larger ones
+	# Post-processing to remove any bboxes whose coordinates are inside larger bboxes.
 	# -- remove_inside_bboxes(bboxes)
 	# 2. 
-	# post-processing to combine any larger bboxes
+	# Post-processing that combines any two overlapping bboxes into one larger bbox.
 	# -- 2. combine_bboxes(bboxes)
 	
 	
@@ -31,7 +31,11 @@ def main()
 	cv.imwrite('../data/beatles_output.jpg', im)
 
 	
-# post-processing to remove any smaller bboxes appearing inside larger ones	
+#######################
+### POST-PROCESSING ###
+#######################
+
+# 1. Post-processing to remove any bboxes whose coordinates are inside larger bboxes.	
 def remove_inside_bboxes(bboxes):
 	filtered_bboxes = []
 	for test_bbox in bboxes:
@@ -46,7 +50,6 @@ def smaller_bbox(test_bbox, bboxes):
 	t_ymax = test_bbox[3]
 
 	for bbox in bboxes:
-	
 		if list(test_bbox) == list(bbox):
 			continue
 			
@@ -55,28 +58,27 @@ def smaller_bbox(test_bbox, bboxes):
 		b_xmax = bbox[2]
 		b_ymax = bbox[3]
 		
+		# Return True if test_bbox coordinates is inside another bounding box
 		if b_xmin <= t_xmin <= b_xmax and b_xmin <= t_xmax <= b_xmax \
 		and b_ymin <= t_ymin <= b_ymax and b_ymin <= t_ymax <= b_ymax:
-			return 1
-			
-	return 0
+			return True
+	return False
 	
-	
-# post-processing
-# Given a number of bboxes the aim is to combine any which are overlapping
+
+# 2. Post-processing that combines any two overlapping bboxes into one larger bbox.
 def combine_bboxes(bboxes):
-	filtered = []
+	not_matched_bboxes = []
 	combined = []
-	not_stop = 1
-	match = 0
-	while(not_stop):
-		not_stop = 0
+	loop_again = True
+	match = False
+	
+	while(loop_again):
+		loop_again = False
 		
 		for bboxA in bboxes:
-			bboxA = list(bboxA)
 			for bboxB in bboxes:
-				bboxB = list(bboxB)
-				if bboxA != bboxB:
+
+				if bboxA != bboxB: # ignore the same bbox
 					# determine the (x, y)-coordinates of the intersection rectangle
 					xmin = max(bboxA[0], bboxB[0])
 					ymin = max(bboxA[1], bboxB[1])
@@ -86,8 +88,8 @@ def combine_bboxes(bboxes):
 					# compute the area of intersection rectangle
 					interArea = max(0, xmax - xmin) * max(0, ymax - ymin)
 					
-					# compute coordinates if larger bbox
-					if interArea != 0:
+					# If intersection > 0, compute coordinates of combined bbox
+					if interArea > 0:
 						xmin = min(bboxA[0], bboxB[0])
 						ymin = min(bboxA[1], bboxB[1])
 						xmax = max(bboxA[2], bboxB[2])
@@ -96,18 +98,20 @@ def combine_bboxes(bboxes):
 						if [xmin,ymin,xmax,ymax] not in combined:
 							combined.append([xmin,ymin,xmax,ymax])
 							
-						match = 1
-						not_stop = 1
+						match = True
+						loop_again = True # We need to loop again to ensure this combined bbox
+								  # is not overlapping with another bbox
 			
-			if match == 0:
-				if bboxA not in filtered:
-					filtered.append(bboxA)
-			match = 0
-			
+			if match == False: # if bboxA doesn't overlap with any other bbox in this current interation
+				if bboxA not in not_matched_bboxes:
+					not_matched_bboxes.append(bboxA)
+			match = False
+		
 		bboxes = combined.copy()
+		bboxes.extend(not_matched_bboxes)
 		combined = []
 				
-	return filtered
+	return bboxes
 	
 	
 	
