@@ -35,7 +35,7 @@ def main():
 ### POST-PROCESSING ###
 #######################
 
-# 1. Post-processing to remove any bboxes whose coordinates are inside larger bboxes.	
+# 1. Post-processing to remove any bboxes whose coordinates are inside larger bboxes.
 def remove_inside_bboxes(bboxes):
 	filtered_bboxes = []
 	for test_bbox in bboxes:
