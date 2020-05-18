@@ -13,18 +13,16 @@ def main()
 
 	_, bboxes = detectum.process_frame(im, THRESHOLD)
 	
-	### uncomment to utilise post-processing ###
+	
+	# --- uncomment to utilise post-processing --- #
+	# 1.
 	# post-processing to remove any smaller bboxes appearing inside larger ones
-	'''filtered_bboxes = []
-	for test_bbox in bboxes:
-		if not smallerBBox(test_bbox, bboxes):
-			filtered_bboxes.append(test_bbox)
-	bboxes = filtered_bboxes'''
-	
-	
+	# -- remove_inside_bboxes(bboxes)
+	# 2. 
 	# post-processing to combine any larger bboxes
-	'''combine_bboxes(bboxes)'''
-
+	# -- 2. combine_bboxes(bboxes)
+	
+	
 	# Loop through list (if empty this will be skipped) and overlay green bboxes
 	# Format of bboxes is: xmin, ymin (top left), xmax, ymax (bottom right)
 	for i in bboxes:
@@ -32,9 +30,16 @@ def main()
 
 	cv.imwrite('../data/beatles_output.jpg', im)
 
+	
+# post-processing to remove any smaller bboxes appearing inside larger ones	
+def remove_inside_bboxes(bboxes):
+	filtered_bboxes = []
+	for test_bbox in bboxes:
+		if not smaller_bbox(test_bbox, bboxes):
+			filtered_bboxes.append(test_bbox)
+	bboxes = filtered_bboxes
 
-# post-processing to remove any smaller bboxes appearing inside larger ones
-def smallerBBox(test_bbox, bboxes):
+def smaller_bbox(test_bbox, bboxes):
 	t_xmin = test_bbox[0]
 	t_ymin = test_bbox[1]
 	t_xmax = test_bbox[2]
@@ -103,6 +108,7 @@ def combine_bboxes(bboxes):
 		combined = []
 				
 	return filtered
+	
 	
 	
 if __name__ == "__main__":
