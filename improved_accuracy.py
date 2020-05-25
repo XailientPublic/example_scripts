@@ -9,7 +9,7 @@ def main():
 	detectum = dnn.Detector()
 	THRESHOLD = 0.4 # Value between 0 and 1 for confidence score
 
-	im = cv.imread('../data/party.jpeg')
+	im = cv.imread('../data/beatles.jpg')
 
 	_, bboxes = detectum.process_frame(im, THRESHOLD)
 
@@ -28,7 +28,7 @@ def main():
 	for i in bboxes:
 		cv.rectangle(im, (i[0], i[1]), (i[2], i[3]), (0, 255, 0), 3)
 
-	cv.imwrite('../data/party_remove_output.jpeg', im)
+	cv.imwrite('../data/beatles_output.jpg', im)
 
 
 #######################
