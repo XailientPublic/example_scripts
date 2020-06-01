@@ -11,9 +11,6 @@ while True:
     _, next_frame = cap.read() # Reads the next video frame into memory
     _, bboxes = detectum.process_frame(next_frame, THRESHOLD) # Extract bbox coords
 
-    # extract bbox coords
-    contours, hierarchy = cv.findContours(bin_mask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
-
     # Loop through list (if empty this will be skipped) and overlay green bboxes
     # Format of bboxes is: xmin, ymin (top left), xmax, ymax (bottom right)
     for i in bboxes:
