@@ -1,0 +1,14 @@
+site_name: Xailient Docs
+nav:
+    - Inference on Static Image: inference_video.md
+    - Inference on Video: inference_video.md
+    - Post Processing Scripts: inference_video.md
+theme: 
+    name: 'material'
+    logo: 'img/logo.png'
+    favicon: 'img/favicon.png'
+extra_css:
+- 'stylesheets/extra.css'
+markdown_extensions:
+  - admonition
+  - codehilite
