@@ -110,6 +110,7 @@ def combine_bboxes(bboxes):
 		bboxes = combined.copy()
 		bboxes.extend(not_matched_bboxes)
 		combined = []
+		not_matched_bboxes = []
 
 	return bboxes
 
