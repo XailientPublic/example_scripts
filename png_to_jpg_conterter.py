@@ -10,6 +10,7 @@ import os
 from argparse import ArgumentParser
 from tqdm import tqdm
 import shutil
+import cv2
 
 def main():
     args = parse_args()
@@ -33,8 +34,9 @@ def png_to_jpg(input_path, output_path):
 
     print(type(png_images_list))
     for txt_file in tqdm(png_images_list, total=len(png_images_list)):
+        img = cv2.imread(txt_file)
         new_file_name = output_path + "/" + txt_file.split('.')[0].split('/')[-1] + ".jpg"
-        shutil.copy(txt_file, new_file_name)
+        cv2.imwrite(new_file_name, img)
         
 if __name__ == '__main__':
     main()
