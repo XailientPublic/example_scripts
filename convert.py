@@ -1,14 +1,15 @@
 '''A script to convert different annotations formats to the format required by the Xailient Console.
-Currently supported formats for this conversion script are pascalvoc/labelimg, labelme, coco, and yolo formats.
-Choices for input_format argument are 'voc', 'coco', 'labelme', 'yolo'
+Currently supported formats for this conversion script are pascalvoc/labelimg, labelme, coco, yolo, and aws formats.
+Choices for input_format argument are 'voc', 'coco', 'labelme', 'yolo', 'aws'
 For annotations present in a single file (e.g. COCO), input_path represents the path to the JSON file,
-while for separate annotations for each image (e.g. Pascal VOC, yolo, labelme), input_path represents
+while for separate annotations for each image (e.g. Pascal VOC, yolo, labelme, aws), input_path represents
 the path to the folder where the annotations reside.
 The output_path is the path and name of the converted xailient annotations.
 
 Example Usage:
 python convert.py --input_path /home/example/project/data --input_format voc --output_path /home/example/project/data/xailient_labels.csv
-python convert.py --input_path /home/example/project/data/coco_annotations.json --input_format coco --output_path /home/example/project/data/xailient_labels.csv'''
+python convert.py --input_path /home/example/project/data/coco_annotations.json --input_format coco --output_path /home/example/project/data/xailient_labels.csv
+python convert.py --input_path /home/example/project/data/output.manifest --input_format aws --output_path /home/example/project/data/xailient_labels.csv --aws_labeling_job_name my_labeling_job --is_labeling_adjustment_job False'''
 
 import csv
 import json
@@ -40,12 +41,17 @@ def main():
     elif args.input_format == 'yolo':
         convert_yolo_to_xailient(args.input_path, args.output_path)
 
+    elif args.input_format == 'aws':
+        convert_aws_to_xailient(args.input_path, args.output_path, args.aws_labeling_job_name, True if args.is_labeling_adjustment_job else False)
+
 
 def parse_args():
     parser = ArgumentParser()
     parser.add_argument('--input_path', required=True)
-    parser.add_argument('--input_format', required=True, choices=['voc', 'coco', 'labelme', 'yolo'])
+    parser.add_argument('--input_format', required=True, choices=['voc', 'coco', 'labelme', 'yolo', 'aws'])
     parser.add_argument('--output_path', required=True)
+    parser.add_argument('--aws_labeling_job_name', required=False)
+    parser.add_argument('--is_labeling_adjustment_job', required=False, default=False)
     args = parser.parse_args()
     return args
 
@@ -79,6 +85,47 @@ def convert_pascal_voc_to_xailient(input_xml_folder, output_csv_file):
 
                 writer.writerow(
                     [filename, currentClass, xmin, ymin, xmax, ymax])
+
+def convert_aws_to_xailient(input_path, output_path, labeling_job_name, islabellingAdjustmentJob=False):
+
+    if islabellingAdjustmentJob:
+        labeling_job_name = labeling_job_name + "-label-adjustment"
+
+    with open(input_path) as f:
+        lines = f.readlines() 
+
+    columns = ['image_name', 'xmin', 'xmax', 'ymin', 'ymax', 'class']
+    xailient_df_annotation = pd.DataFrame(columns=columns)
+
+    for line in tqdm(lines, total=len(lines)): 
+
+        # Convert string to json
+        json_data = json.loads(line.strip()) 
+        
+        # Get image file name from source-ref
+        source_ref = json_data['source-ref']
+        file_name = source_ref.split("/")[-1]
+
+        for i in json_data[labeling_job_name]['annotations']:
+            class_id = i['class_id']
+            x_min = i['left']
+            y_min = i['top']
+            x_max = x_min + i['width']
+            y_max = y_min + i['height']
+            x_min = int(x_min)
+            y_min = int(y_min)
+            x_max = int(x_max)
+            y_max = int(y_max)
+
+            # Get class name from class mapping
+            class_name = json_data[labeling_job_name + "-metadata"]['class-map'][str(class_id)]
+            
+            xailient_df_annotation = xailient_df_annotation.append(
+                {'image_name': file_name, 'class': class_name, 'xmin': x_min, 'xmax': x_max, 'ymin': y_min,
+                 'ymax': y_max}, ignore_index=True)
+    
+    final_df = xailient_df_annotation[columns]
+    final_df.to_csv(output_path, index=False)
 
 
 def convert_labelme_to_xailient(input_json_folder, output_csv_file):
