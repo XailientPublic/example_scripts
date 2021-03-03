@@ -5,7 +5,6 @@ For annotations present in a single file (e.g. COCO), input_path represents the 
 while for separate annotations for each image (e.g. Pascal VOC, yolo, labelme, aws), input_path represents
 the path to the folder where the annotations reside.
 The output_path is the path and name of the converted xailient annotations.
-
 Example Usage:
 python convert.py --input_path /home/example/project/data --input_format voc --output_path /home/example/project/data/xailient_labels.csv
 python convert.py --input_path /home/example/project/data/coco_annotations.json --input_format coco --output_path /home/example/project/data/xailient_labels.csv
@@ -106,24 +105,47 @@ def convert_aws_to_xailient(input_path, output_path, labeling_job_name, islabell
         source_ref = json_data['source-ref']
         file_name = source_ref.split("/")[-1]
 
-        for i in json_data[labeling_job_name]['annotations']:
-            class_id = i['class_id']
-            x_min = i['left']
-            y_min = i['top']
-            x_max = x_min + i['width']
-            y_max = y_min + i['height']
-            x_min = int(x_min)
-            y_min = int(y_min)
-            x_max = int(x_max)
-            y_max = int(y_max)
+        if labeling_job_name in json_data:
+            if 'annotations' in json_data[labeling_job_name]:
+                if len(json_data[labeling_job_name]['annotations']) == 0:
+                    print("no annotation")
+                    class_name = ""
+                    x_min = 0
+                    y_min = 0
+                    x_max = 0
+                    y_max = 0
+                    x_min = int(x_min)
+                    y_min = int(y_min)
+                    x_max = int(x_max)
+                    y_max = int(y_max)
 
-            # Get class name from class mapping
-            class_name = json_data[labeling_job_name + "-metadata"]['class-map'][str(class_id)]
-            
-            xailient_df_annotation = xailient_df_annotation.append(
-                {'image_name': file_name, 'class': class_name, 'xmin': x_min, 'xmax': x_max, 'ymin': y_min,
-                 'ymax': y_max}, ignore_index=True)
-    
+                    xailient_df_annotation = xailient_df_annotation.append(
+                        {'image_name': file_name, 'class': class_name, 'xmin': x_min, 'xmax': x_max, 'ymin': y_min,
+                        'ymax': y_max}, ignore_index=True)
+
+                else:
+                    for i in json_data[labeling_job_name]['annotations']:
+                        class_id = i['class_id']
+                        x_min = i['left']
+                        y_min = i['top']
+                        x_max = x_min + i['width']
+                        y_max = y_min + i['height']
+                        x_min = int(x_min)
+                        y_min = int(y_min)
+                        x_max = int(x_max)
+                        y_max = int(y_max)
+
+                        # Get class name from class mapping
+                        class_name = json_data[labeling_job_name + "-metadata"]['class-map'][str(class_id)]
+                        
+                        xailient_df_annotation = xailient_df_annotation.append(
+                            {'image_name': file_name, 'class': class_name, 'xmin': x_min, 'xmax': x_max, 'ymin': y_min,
+                            'ymax': y_max}, ignore_index=True)
+
+        elif labeling_job_name+"-metadata" in json_data:
+            if 'failure-reason' in json_data[labeling_job_name+"-metadata"]:
+                print(json_data[labeling_job_name+"-metadata"]['failure-reason'])
+
     final_df = xailient_df_annotation[columns]
     final_df.to_csv(output_path, index=False)
 
@@ -244,7 +266,6 @@ def relative_to_absolute(data, input_folder, classes=None):
     The height and width here refer to the relative height and width of the object, as per darknet format.
     classes is a dictionary to map class integers to class labels for tf.record
     It returns absolute coordinates dataframe and bad filenames that do not correspond to actual images
-
     @returns absolute_data (df):        A dataframe with columns ['image_name', 'class', 'xmin', 'xmax', 'ymin', 'ymax', 'height', 'width']
                                         where height and width are now the height and width of the image
     @returns bad_filenames (list):      A list of bad image filenames that could not be processed.
