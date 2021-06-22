@@ -12,6 +12,10 @@ This repo contains sample reference implementations and example codes
 
 [http_post_example.py](http_post_example.py)
 
+## Scripts for running Xailient SDK as Docker container API
+
+[XailientDockerAPI](XailientDockerAPI/docker_x86_64)
+
 ## Post-processing scripts to improve accuracy
 
 [post_processing_script_to_improved_accuracy.py](post_processing_script_to_improved_accuracy.py)
