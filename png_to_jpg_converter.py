@@ -17,7 +17,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 '''A script to convert .png images into .jpg images
 
 Example Usage:
-python png_to_jpg_conterter.py --input_path /home/example/project/images --output_path /home/example/project/images_jpg
+python png_to_jpg_converter.py --input_path /home/example/project/images --output_path /home/example/project/images_jpg
 '''
 
 import os
