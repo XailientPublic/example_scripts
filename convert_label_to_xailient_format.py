@@ -1,3 +1,19 @@
+"""
+Copyright 2021 Xailient Inc.
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated 
+documentation files (the "Software"), to deal in the Software without restriction, including without 
+limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies 
+of the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+The above copyright notice and this permission notice shall be included in all copies or 
+substantial portions of the Software.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE 
+AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, 
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+"""
+
 '''A script to convert different annotations formats to the format required by the Xailient Console.
 Currently supported formats for this conversion script are pascalvoc/labelimg, labelme, coco, yolo, and aws formats.
 Choices for input_format argument are 'voc', 'coco', 'labelme', 'yolo', 'aws'
@@ -6,9 +22,9 @@ while for separate annotations for each image (e.g. Pascal VOC, yolo, labelme, a
 the path to the folder where the annotations reside.
 The output_path is the path and name of the converted xailient annotations.
 Example Usage:
-python convert.py --input_path /home/example/project/data --input_format voc --output_path /home/example/project/data/xailient_labels.csv
-python convert.py --input_path /home/example/project/data/coco_annotations.json --input_format coco --output_path /home/example/project/data/xailient_labels.csv
-python convert.py --input_path /home/example/project/data/output.manifest --input_format aws --output_path /home/example/project/data/xailient_labels.csv --aws_labeling_job_name my_labeling_job --is_labeling_adjustment_job False'''
+python convert_label_to_xailient_format.py --input_path /home/example/project/data --input_format voc --output_path /home/example/project/data/xailient_labels.csv
+python convert_label_to_xailient_format.py --input_path /home/example/project/data/coco_annotations.json --input_format coco --output_path /home/example/project/data/xailient_labels.csv
+python convert_label_to_xailient_format.py --input_path /home/example/project/data/output.manifest --input_format aws --output_path /home/example/project/data/xailient_labels.csv --aws_labeling_job_name my_labeling_job --is_labeling_adjustment_job False'''
 
 import csv
 import json

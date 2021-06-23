@@ -1,0 +1,42 @@
+"""
+Copyright 2021 Xailient Inc.
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated 
+documentation files (the "Software"), to deal in the Software without restriction, including without 
+limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies 
+of the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+The above copyright notice and this permission notice shall be included in all copies or 
+substantial portions of the Software.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE 
+AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, 
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+"""
+
+import cv2 as cv
+from xailient import dnn
+import numpy as np
+
+THRESHOLD = 0.4 # Value between 0 and 1 for confidence score
+
+detectum = dnn.Detector()
+cap = cv.VideoCapture("sample.mp4")
+
+while True:
+    _, next_frame = cap.read() # Reads the next video frame into memory
+    _, bboxes = detectum.process_frame(next_frame, THRESHOLD) # Extract bbox coords
+
+    # Loop through list (if empty this will be skipped) and overlay green bboxes
+    # Format of bboxes is: xmin, ymin (top left), xmax, ymax (bottom right)
+    for i in bboxes:
+        cv.rectangle(next_frame, (i[0], i[1]), (i[2], i[3]), (0, 255, 0), 3)
+
+    cv.imshow("Rendered Video", next_frame)
+
+    key = cv.waitKey(50)
+    if key == 27: # Hit ESC key to stop
+        break
+
+cap.release()
+cv.destroyAllWindows()
