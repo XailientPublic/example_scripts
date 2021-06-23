@@ -23,3 +23,9 @@ This repo contains sample reference implementations and example codes
 ## Scripts to convert image formats
 
 [png_to_jpg_converter.py](png_to_jpg_converter.py)
+
+## Scripts to sample frame from video
+
+[extract_frames_from_video.py](extract_frames_from_video.py)
+
+[sample_frames_from_video.sh](sample_frames_from_video.sh)

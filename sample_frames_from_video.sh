@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 #Copyright 2021 Xailient Inc.
 #Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated 
@@ -14,40 +14,32 @@
 #DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
 #OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-###############
-#  RUN BASIC SCRIPT  #
-###############
+# sh sample_videos.sh path_to_videos <every_ith_frame> <framerate>
 
-echo 'RUNNING XAILIENT DETECTOR SDK API'
+# Given a folder of videos this script will sample every ith frame
+# and create a new videos at a chosen framerate.
 
-LOCATION=$(python3.7 -m pip show xailient | 
-egrep '^Location: .+' | 
-sed 's/Location: //')
+# Need ffmpeg and extract_frames_from_videp.py script
 
-cd "$LOCATION"
-cd xailient/
-cd scripts
+mkdir temp_frames || { echo 'Directory temp_frames exists, remove to run this program' ; exit 1; }
+mkdir output_videos || { echo 'Directory output_videos exists, remove to run this program' ; rm -r temp_frames; exit 1; }
 
-echo $LOCATION
+path_to_vids="$1"
+ith="$2"
+framerate="$3"
 
-# Register the deivce and wait for a couple of seconds
-echo "Uninstalling previous installations..."
-python3 -m xailient.uninstall
-sleep 2
+vid_list=$(ls "$path_to_vids")
 
-echo "Registering device..."
-python3 -m xailient.install
+num_videos=$(ls "$path_to_vids" | wc -l)
 
+count=1
+for f in $vid_list ;do
+    echo "Video number: $count/$num_videos"
+    file_path="$path_to_vids/$f"
+    folder_name=$(echo "$f" | sed 's/\.[a-zA-Z]*$//')
+    python3 extract_frames_from_videp.py --every "$ith" --output_path "$(pwd)/temp_frames" "$file_path"
+    ffmpeg -framerate "$framerate" -i "temp_frames/$folder_name/frame_%d.jpg" "output_videos/$folder_name.mp4"
+    count=$((count + 1))
+done
 
-cp /app/detection_api.py ../samples/.
-
-cd ../samples/.
-
-python3 -u detection_api.py
-
-if [ $? -eq 0 ]; then
-	echo "\SERVER STARTED ..."
-else
-	echo "\nError: Inference failed"#
-	echo 'Contact support@xailient.com'
-fi
+rm -r temp_frames
