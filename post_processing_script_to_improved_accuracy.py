@@ -14,18 +14,19 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-from xailient import dnn
+from xailient import roi_bbox
 import cv2 as cv
 
 #By default Low resolution DNN for face detector will be loaded.
 #To load the high resolution Face detector please comment the below lines.
 def main():
-	detectum = dnn.Detector()
-	THRESHOLD = 0.4 # Value between 0 and 1 for confidence score
+	detectum = roi_bbox.ROIBBoxModel()
 
 	im = cv.imread('../data/beatles.jpg')
+	# opencv reads BGR format so we have to convert this to RGB
+	im = cv2.cvtColor(im, cv.COLOR_BGR2RGB)
 
-	_, bboxes = detectum.process_frame(im, THRESHOLD)
+	bboxes = detectum.process_image(im)
 
 
 	# --- uncomment to utilise post-processing --- #
@@ -39,9 +40,13 @@ def main():
 
 	# Loop through list (if empty this will be skipped) and overlay green bboxes
 	# Format of bboxes is: xmin, ymin (top left), xmax, ymax (bottom right)
-	for i in bboxes:
-		cv.rectangle(im, (i[0], i[1]), (i[2], i[3]), (0, 255, 0), 3)
+	for bbox in bboxes:
+		pt1 = (bbox.xmin, bbox.ymin)
+		pt2 = (bbox.xmax, bbox.ymax)
+		cv.rectangle(im, pt1, pt2, (0, 255, 0))	
 
+	# conver it back to RGB
+	im = cv.cvtColor(im, cv.COLOR_RGB2BGR)
 	cv.imwrite('../data/beatles_output.jpg', im)
 
 
