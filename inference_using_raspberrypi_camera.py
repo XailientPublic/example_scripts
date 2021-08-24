@@ -21,14 +21,10 @@ from picamera import PiCamera
 import time
 import cv2 as cv
 import math
-from xailient import dnn
+from xailient import roi_bbox
 import numpy as np
 
-#By default Low resolution DNN for face detector will be loaded.
-#To load the high resolution Face detector please comment the below lines.
-detectum = dnn.Detector()
-
-THRESHOLD = 0.45 # Value between 0 and 1 for confidence score
+detectum = roi_bbox.ROIBBoxModel()
 
 # initialize the camera and grab a reference to the raw camera capture
 RES_W = 640 # 1280 # 640 # 256 # 320 # 480 # pixels
@@ -47,17 +43,20 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     # grab the raw NumPy array representing the image, then initialize the timestamp
     # and occupied/unoccupied text
     image = frame.array
-    image_cpy = np.copy(image) # Create copy since cant modify orig
+    im = np.copy(image) # Create copy since cant modify orig
 
     # Return's list of bounding box co-ordinates
-    _, bboxes = detectum.process_frame(image, THRESHOLD)
+    bboxes = detectum.process_image(im)
 
     # Loop through list (if empty this will be skipped) and overlay green bboxes
-    for i in bboxes:
-        cv.rectangle(image_cpy, (i[0], i[1]), (i[2], i[3]), (0, 255, 0), 3)
+    # Format of bboxes is: xmin, ymin (top left), xmax, ymax (bottom right)
+    for bbox in bboxes:
+        pt1 = (bbox.xmin, bbox.ymin)
+        pt2 = (bbox.xmax, bbox.ymax)
+        cv.rectangle(im, pt1, pt2, (0, 255, 0))
 
     # show the frame
-    cv.imshow("Frame", image_cpy)
+    cv.imshow("Frame", im)
     key = cv.waitKey(1) & 0xFF
 
     # clear the stream in preparation for the next frame

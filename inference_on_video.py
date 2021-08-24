@@ -15,22 +15,23 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 """
 
 import cv2 as cv
-from xailient import dnn
+from xailient import roi_bbox
 import numpy as np
 
-THRESHOLD = 0.4 # Value between 0 and 1 for confidence score
-
-detectum = dnn.Detector()
+detectum = roi_bbox.ROIBBoxModel()
 cap = cv.VideoCapture("sample.mp4")
 
 while True:
     _, next_frame = cap.read() # Reads the next video frame into memory
-    _, bboxes = detectum.process_frame(next_frame, THRESHOLD) # Extract bbox coords
+    
+    bboxes = detectum.process_image(next_frame)
 
     # Loop through list (if empty this will be skipped) and overlay green bboxes
     # Format of bboxes is: xmin, ymin (top left), xmax, ymax (bottom right)
-    for i in bboxes:
-        cv.rectangle(next_frame, (i[0], i[1]), (i[2], i[3]), (0, 255, 0), 3)
+    for bbox in bboxes:
+        pt1 = (bbox.xmin, bbox.ymin)
+        pt2 = (bbox.xmax, bbox.ymax)
+        cv.rectangle(next_frame, pt1, pt2, (0, 255, 0))
 
     cv.imshow("Rendered Video", next_frame)
 
