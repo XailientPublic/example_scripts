@@ -87,13 +87,16 @@ def convert_hasty_to_xailient(input_path, output_path):
         for label in labels:
             category_id = label['class_name']
             x_min = label['bbox'][0]
-            x_max = label['bbox'][1]
-            y_min = label['bbox'][2]
+            y_min = label['bbox'][1]
+            x_max = label['bbox'][2]
             y_max = label['bbox'][3]
+
             x_min = int(x_min)
             y_min = int(y_min)
             x_max = int(x_max)
             y_max = int(y_max)
+            print("{} -> {} {} {} {}".format(label['bbox'], x_min, x_max, y_min, y_max))
+            
             xailient_df_annotation = xailient_df_annotation.append(
                 {'image_name': image_id, 'class': category_id, 'xmin': x_min, 'xmax': x_max, 'ymin': y_min,
                 'ymax': y_max}, ignore_index=True)
