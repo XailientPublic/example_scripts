@@ -59,17 +59,46 @@ def main():
     elif args.input_format == 'aws':
         convert_aws_to_xailient(args.input_path, args.output_path, args.aws_labeling_job_name, True if args.is_labeling_adjustment_job else False)
 
+    elif args.input_format == 'hasty':
+        convert_hasty_to_xailient(args.input_path, args.output_path)
 
 def parse_args():
     parser = ArgumentParser()
     parser.add_argument('--input_path', required=True)
-    parser.add_argument('--input_format', required=True, choices=['voc', 'coco', 'labelme', 'yolo', 'aws'])
+    parser.add_argument('--input_format', required=True, choices=['voc', 'coco', 'labelme', 'yolo', 'aws', 'hasty', 'txt'])
     parser.add_argument('--output_path', required=True)
     parser.add_argument('--aws_labeling_job_name', required=False)
     parser.add_argument('--is_labeling_adjustment_job', required=False, default=False)
     args = parser.parse_args()
     return args
 
+def convert_hasty_to_xailient(input_path, output_path):
+
+    with open(input_path) as f:
+        data = json.load(f)
+
+    xailient_df_annotation = pd.DataFrame(columns=['image_name', 'class', 'xmin', 'xmax', 'ymin', 'ymax'])
+
+    for i in data['images']:
+        image_id = i['image_name']
+        labels = i['labels']
+
+        print(len(labels))
+        for label in labels:
+            category_id = label['class_name']
+            x_min = label['bbox'][0]
+            y_min = label['bbox'][1]
+            x_max = x_min + label['bbox'][2]
+            y_max = y_min + label['bbox'][3]
+            x_min = int(x_min)
+            y_min = int(y_min)
+            x_max = int(x_max)
+            y_max = int(y_max)
+            xailient_df_annotation = xailient_df_annotation.append(
+                {'image_name': image_id, 'class': category_id, 'xmin': x_min, 'xmax': x_max, 'ymin': y_min,
+                'ymax': y_max}, ignore_index=True)
+
+    xailient_df_annotation.to_csv(output_path, index=False)
 
 def convert_pascal_voc_to_xailient(input_xml_folder, output_csv_file):
 
