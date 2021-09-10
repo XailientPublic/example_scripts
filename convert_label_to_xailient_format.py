@@ -87,9 +87,9 @@ def convert_hasty_to_xailient(input_path, output_path):
         for label in labels:
             category_id = label['class_name']
             x_min = label['bbox'][0]
-            y_min = label['bbox'][1]
-            x_max = x_min + label['bbox'][2]
-            y_max = y_min + label['bbox'][3]
+            x_max = label['bbox'][1]
+            y_min = label['bbox'][2]
+            y_max = label['bbox'][3]
             x_min = int(x_min)
             y_min = int(y_min)
             x_max = int(x_max)
