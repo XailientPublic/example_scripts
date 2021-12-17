@@ -22,9 +22,12 @@ while for separate annotations for each image (e.g. Pascal VOC, yolo, labelme, a
 the path to the folder where the annotations reside.
 The output_path is the path and name of the converted xailient annotations.
 Example Usage:
+
 python convert_label_to_xailient_format.py --input_path /home/example/project/data --input_format voc --output_path /home/example/project/data/xailient_labels.csv
 python convert_label_to_xailient_format.py --input_path /home/example/project/data/coco_annotations.json --input_format coco --output_path /home/example/project/data/xailient_labels.csv
 python convert_label_to_xailient_format.py --input_path /home/example/project/data/output.manifest --input_format aws --output_path /home/example/project/data/xailient_labels.csv --aws_labeling_job_name my_labeling_job --is_labeling_adjustment_job False'''
+
+
 
 import csv
 import json
@@ -62,10 +65,13 @@ def main():
     elif args.input_format == 'hasty':
         convert_hasty_to_xailient(args.input_path, args.output_path)
 
+    elif args.input_format == 'edgecaseai':
+        convert_edgecaseai_json_to_xailient(args.input_path, args.output_path)
+
 def parse_args():
     parser = ArgumentParser()
     parser.add_argument('--input_path', required=True)
-    parser.add_argument('--input_format', required=True, choices=['voc', 'coco', 'labelme', 'yolo', 'aws', 'hasty', 'txt'])
+    parser.add_argument('--input_format', required=True, choices=['voc', 'coco', 'labelme', 'yolo', 'aws', 'hasty', 'txt', 'edgecaseai'])
     parser.add_argument('--output_path', required=True)
     parser.add_argument('--aws_labeling_job_name', required=False)
     parser.add_argument('--is_labeling_adjustment_job', required=False, default=False)
@@ -347,6 +353,23 @@ def relative_to_absolute(data, input_folder, classes=None):
     absolute_data = data[['image_name', 'class', 'xmin', 'xmax', 'ymin', 'ymax']]
     return absolute_data
 
+def convert_edgecaseai_json_to_xailient(input_path, output_path):
+
+    with open(input_path) as f:
+        data = json.load(f)
+
+    with open(output_path, "w", newline='') as file:
+        csv_file = csv.writer(file)
+        csv_file.writerow(['frame','class_name', 'xmin','ymin','xmax','ymax'])
+        for ann in data['annotations']:
+            for s in ann['metadata']['system']['snapshots_']:
+                f = s['frame']
+                xmin=s['data'][0]['x']
+                ymin=s['data'][0]['y']
+                xmax=s['data'][1]['x']
+                ymax=s['data'][1]['y']
+                c = s['label']
+                csv_file.writerow([f,c,xmin,ymin,xmax,ymax])
 
 if __name__ == '__main__':
     main()
