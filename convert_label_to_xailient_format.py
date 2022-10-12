@@ -62,15 +62,112 @@ def main():
     elif args.input_format == 'hasty':
         convert_hasty_to_xailient(args.input_path, args.output_path)
 
+    elif args.input_format == 'xailient' and args.output_format == 'coco':
+        convert_xailient_to_coco(args.input_path, args.output_path, args.image_dir if "image_dir" in args else None)
+
 def parse_args():
     parser = ArgumentParser()
     parser.add_argument('--input_path', required=True)
-    parser.add_argument('--input_format', required=True, choices=['voc', 'coco', 'labelme', 'yolo', 'aws', 'hasty', 'txt'])
+    parser.add_argument('--input_format', required=True, choices=['voc', 'coco', 'labelme', 'yolo', 'aws', 'hasty', 'txt', 'xailient'])
+    parser.add_argument('--output_format', required=True, choices=['coco', 'xailient'], default='xailient')
     parser.add_argument('--output_path', required=True)
+    parser.add_argument('--image_dir', required=False, default="")
+    parser.add_argument('--is_labeling_adjustment_job', required=False, default=False)
     parser.add_argument('--aws_labeling_job_name', required=False)
     parser.add_argument('--is_labeling_adjustment_job', required=False, default=False)
     args = parser.parse_args()
     return args
+
+def convert_xailient_to_coco(input_path, output_path, image_dir):
+    """
+    This function converts xailient label format to coco label format
+    """
+    data = pd.read_csv(input_path)
+
+    images = []
+    categories = []
+    annotations = []
+
+    category = {}
+    category["supercategory"] = 'none'
+    category["id"] = 0
+    category["name"] = 'None'
+    categories.append(category)
+
+    data['fileid'] = data['image_name'].astype('category').cat.codes
+    data['categoryid']= pd.Categorical(data['class'],ordered= True).codes
+    data['categoryid'] = data['categoryid']+1
+    data['annid'] = data.index
+    data['filename'] = data['image_name']
+    data['image_dir'] = image_dir
+
+    def get_image_dimensions(image_dir, filename):
+        """
+        Returns height, width of image
+        """
+        if image_dir is not None and os.path.isdir(image_dir):
+            image_full_path = os.path.join(image_dir, filename)
+            im = Image.open(image_full_path)
+            w, h = im.size
+            #print('width: ', w)
+            #print('height:', h)
+            return h, w
+        else:
+            return 0, 0
+
+    def attributes(occluded=False):
+        attributes = {}
+        attributes["occluded"] = occluded
+        attributes["rotation"] = 0.0
+        return attributes
+
+    def image(row):
+        image = {}
+        image["height"], image["width"] = get_image_dimensions(row.image_dir, row.filename)
+        #image["height"] = 720
+        #image["width"] = 1280
+        image["id"] = row.fileid
+        image["file_name"] = row.filename #"frame_{}.PNG".format(str(row.frame).zfill(6))
+        return image
+
+    def category(row):
+        category = {}
+        category["supercategory"] = 'None'
+        category["id"] = row.categoryid
+        category["name"] = row[2]
+        return category
+
+    def annotation(row):
+        annotation = {}
+        area = (row.xmax -row.xmin)*(row.ymax - row.ymin)
+        annotation["segmentation"] = []
+        annotation["iscrowd"] = 0
+        annotation["attributes"] = attributes()
+        annotation["area"] = area
+        annotation["image_id"] = row.fileid
+
+        annotation["bbox"] = [row.xmin, row.ymin, row.xmax -row.xmin,row.ymax-row.ymin ]
+
+        annotation["category_id"] = row.categoryid
+        annotation["id"] = row.annid
+        return annotation
+
+    for row in data.itertuples():
+        annotations.append(annotation(row))
+
+    imagedf = data.drop_duplicates(subset=['fileid']).sort_values(by='fileid')
+    for row in imagedf.itertuples():
+        images.append(image(row))
+
+    catdf = data.drop_duplicates(subset=['categoryid']).sort_values(by='categoryid')
+    for row in catdf.itertuples():
+        categories.append(category(row))
+
+    data_coco = {}
+    data_coco["images"] = images
+    data_coco["categories"] = categories
+    data_coco["annotations"] = annotations
+    json.dump(data_coco, open(output_path, "w"), indent=4)
 
 def convert_hasty_to_xailient(input_path, output_path):
 
