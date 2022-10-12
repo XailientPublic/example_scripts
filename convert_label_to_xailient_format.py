@@ -74,7 +74,6 @@ def parse_args():
     parser.add_argument('--image_dir', required=False, default="")
     parser.add_argument('--is_labeling_adjustment_job', required=False, default=False)
     parser.add_argument('--aws_labeling_job_name', required=False)
-    parser.add_argument('--is_labeling_adjustment_job', required=False, default=False)
     args = parser.parse_args()
     return args
 
