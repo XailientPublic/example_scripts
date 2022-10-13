@@ -88,10 +88,10 @@ def convert_xailient_to_coco(input_path, output_path, image_dir):
     annotations = []
 
     category = {}
-    category["supercategory"] = 'none'
-    category["id"] = 0
-    category["name"] = 'None'
-    categories.append(category)
+    #category["supercategory"] = 'none'
+    #category["id"] = 0
+    #category["name"] = 'None'
+    #categories.append(category)
 
     data['fileid'] = data['image_name'].astype('category').cat.codes
     data['categoryid']= pd.Categorical(data['class'],ordered= True).codes
