@@ -88,10 +88,6 @@ def convert_xailient_to_coco(input_path, output_path, image_dir):
     annotations = []
 
     category = {}
-    #category["supercategory"] = 'none'
-    #category["id"] = 0
-    #category["name"] = 'None'
-    #categories.append(category)
 
     data['fileid'] = data['image_name'].astype('category').cat.codes
     data['categoryid']= pd.Categorical(data['class'],ordered= True).codes
@@ -108,8 +104,6 @@ def convert_xailient_to_coco(input_path, output_path, image_dir):
             image_full_path = os.path.join(image_dir, filename)
             im = Image.open(image_full_path)
             w, h = im.size
-            #print('width: ', w)
-            #print('height:', h)
             return h, w
         else:
             return 0, 0
@@ -123,10 +117,8 @@ def convert_xailient_to_coco(input_path, output_path, image_dir):
     def image(row):
         image = {}
         image["height"], image["width"] = get_image_dimensions(row.image_dir, row.filename)
-        #image["height"] = 720
-        #image["width"] = 1280
         image["id"] = row.fileid
-        image["file_name"] = row.filename #"frame_{}.PNG".format(str(row.frame).zfill(6))
+        image["file_name"] = row.filename
         return image
 
     def category(row):
